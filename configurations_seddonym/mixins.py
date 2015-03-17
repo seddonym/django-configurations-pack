@@ -33,8 +33,13 @@ class AllowedHostsMixin(object):
         DOMAIN: required.
     """
 
-    @classproperty
-    def ALLOWED_HOSTS(cls):
+    @classmethod
+    def setup(cls):
+        super(AllowedHostsMixin, cls).setup()
+        cls.ALLOWED_HOSTS = cls.get_allowed_hosts()
+
+    @classmethod
+    def get_allowed_hosts(cls):
         return [cls.get_setting('DOMAIN'), 'django-dbbackup']
 
 
@@ -50,8 +55,8 @@ class LoggingMixin(object):
     def setup(cls):
         super(LoggingMixin, cls).setup()
 
-        cls.LOGGING['handlers']['error']['filename'] = cls.ERROR_LOG_FILE
-        cls.LOGGING['handlers']['debug']['filename'] = cls.DEBUG_LOG_FILE
+        cls.LOGGING['handlers']['error']['filename'] = cls.get_error_log_file()
+        cls.LOGGING['handlers']['debug']['filename'] = cls.get_debug_log_file()
 
         # Make sure we don't bother to mail admins if debug is True
         if cls.DEBUG:
@@ -61,12 +66,12 @@ class LoggingMixin(object):
             except (KeyError, ValueError):
                 pass
 
-    @classproperty
-    def ERROR_LOG_FILE(cls):
+    @classmethod
+    def get_error_log_file(cls):
         return os.path.join(cls.get_setting('LOG_PATH'), 'error.log')
 
-    @classproperty
-    def DEBUG_LOG_FILE(cls):
+    @classmethod
+    def get_debug_log_file(cls):
         return os.path.join(cls.get_setting('LOG_PATH'), 'debug.log')
 
 
@@ -84,17 +89,17 @@ class DatabaseMixin(object):
     def post_setup(cls):
         super(DatabaseMixin, cls).post_setup()
 
-        cls.DATABASES['default']['NAME'] = cls.DEFAULT_DATABASE_NAME
-        cls.DATABASES['default']['USER'] = cls.DEFAULT_DATABASE_USER
+        cls.DATABASES['default']['NAME'] = cls.get_default_database_name()
+        cls.DATABASES['default']['USER'] = cls.get_default_database_user()
         cls.DATABASES['default']['PASSWORD'] = cls.get_setting(
                                                 'DEFAULT_DATABASE_PASSWORD')
 
-    @classproperty
-    def DEFAULT_DATABASE_NAME(cls):
+    @classmethod
+    def get_default_database_name(cls):
         return cls.get_setting('PROJECT_NAME')
 
-    @classproperty
-    def DEFAULT_DATABASE_USER(cls):
+    @classmethod
+    def get_default_database_user(cls):
         return cls.get_setting('PROJECT_NAME')
 
 
@@ -111,19 +116,22 @@ class StaticMediaAndTemplatesMixin(object):
     @classmethod
     def setup(cls):
         super(StaticMediaAndTemplatesMixin, cls).setup()
-        cls.MEDIA_ROOT = cls.get_media_root()
-        cls.TEMPLATE_DIRS = cls.get_template_dirs()
 
-    @classproperty
-    def STATIC_ROOT(cls):
+        cls.STATIC_ROOT = cls.get_static_root()
+
+        cls.MEDIA_ROOT = os.path.join(cls.get_setting('PROJECT_ROOT'), 'media')
+        cls.MEDIA_ROOT = os.path.join(cls.get_setting('PROJECT_ROOT'), 'media')
+
+    @classmethod
+    def get_static_root(cls):
         return os.path.join(cls.get_setting('PROJECT_ROOT'), 'static')
 
-    @classproperty
-    def MEDIA_ROOT(cls):
+    @classmethod
+    def get_media_root(cls):
         return os.path.join(cls.get_setting('PROJECT_ROOT'), 'uploads')
 
-    @classproperty
-    def TEMPLATE_DIRS(cls):
+    @classmethod
+    def get_template_dirs(cls):
         TEMPLATE_DIR = os.path.join(cls.get_setting('PROJECT_ROOT'),
                                     'templates')
         return (TEMPLATE_DIR,)

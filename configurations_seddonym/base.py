@@ -31,6 +31,7 @@ class BaseConfiguration(Configuration):
 
 class StandardConfiguration(mixins.UnifiedDebugMixin,
                         mixins.SecretSettingsMixin,
+                        mixins.AllowedHostsMixin,
                         mixins.LoggingMixin,
                         mixins.DatabaseMixin,
                         mixins.StaticMediaAndTemplatesMixin,
