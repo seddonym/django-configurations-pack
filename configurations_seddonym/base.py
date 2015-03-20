@@ -35,6 +35,7 @@ class StandardConfiguration(mixins.UnifiedDebugMixin,
                         mixins.LoggingMixin,
                         mixins.DatabaseMixin,
                         mixins.StaticMediaAndTemplatesMixin,
+                        mixins.EmailMixin,
                         BaseConfiguration):
     """A configuration that collects together lots of standard
     configuration patterns for use across projects."""
