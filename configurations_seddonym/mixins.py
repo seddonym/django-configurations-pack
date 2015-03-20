@@ -118,9 +118,8 @@ class StaticMediaAndTemplatesMixin(object):
         super(StaticMediaAndTemplatesMixin, cls).setup()
 
         cls.STATIC_ROOT = cls.get_static_root()
-
-        cls.MEDIA_ROOT = os.path.join(cls.get_setting('PROJECT_ROOT'), 'media')
-        cls.MEDIA_ROOT = os.path.join(cls.get_setting('PROJECT_ROOT'), 'media')
+        cls.MEDIA_ROOT = cls.get_media_root()
+        cls.TEMPLATE_DIRS = cls.get_template_dirs()
 
     @classmethod
     def get_static_root(cls):
