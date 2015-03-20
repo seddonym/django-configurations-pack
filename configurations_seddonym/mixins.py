@@ -137,23 +137,26 @@ class StaticMediaAndTemplatesMixin(object):
 
 
 
-# class EmailMixin(object):
-#     """Configuration mixin for setting the email.
-#
-#     Usage:
-#
-#         EMAIL_HOST: required
-#     """
-#
-#     @classmethod
-#     def setup(cls):
-#         super(EmailMixin, cls).setup()
-#
-#
-#         self._settings['EMAIL_HOST_USER'] = self.get_email_host_user()
-#         self._settings['SERVER_EMAIL'] = self.get_server_email()
-#         self._settings['DEFAULT_FROM_EMAIL'] = self.get_default_from_email()
-#
-#     @classmethod
-#     def get_email_host_user(cls):
-#         return cls.get_setting('')
+class EmailMixin(object):
+    """Configuration mixin for setting the email.
+    """
+
+    @classmethod
+    def setup(cls):
+        super(EmailMixin, cls).setup()
+
+        cls.DEFAULT_FROM_EMAIL = cls.get_default_from_email()
+        cls.SERVER_EMAIL = cls.get_server_email()
+        cls.CONTACT_EMAIL = cls.get_server_email()
+
+    @classmethod
+    def get_default_from_email(cls):
+        return 'contact@%s' % cls.get_setting('DOMAIN')
+
+    @classmethod
+    def get_server_email(cls):
+        return cls.get_default_from_email()
+
+    @classmethod
+    def get_contact_email(cls):
+        return cls.get_default_from_email()
