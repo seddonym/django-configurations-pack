@@ -58,3 +58,9 @@ class StandardConfiguration(mixins.UnifiedDebugMixin,
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
     )
+
+    PROTOCOL = 'http'
+
+    MANAGERS = ADMINS = (
+        ('David Seddon', 'david@seddonym.me'),
+    )
