@@ -1,5 +1,5 @@
 import os
-from .utils import settings_from_module, classproperty
+from .utils import settings_from_module
 
 
 class UnifiedDebugMixin(object):
@@ -33,14 +33,9 @@ class AllowedHostsMixin(object):
         DOMAIN: required.
     """
 
-    @classmethod
-    def setup(cls):
-        super(AllowedHostsMixin, cls).setup()
-        cls.ALLOWED_HOSTS = cls.get_allowed_hosts()
-
-    @classmethod
-    def get_allowed_hosts(cls):
-        return [cls.get_setting('DOMAIN'), 'django-dbbackup']
+    @property
+    def ALLOWED_HOSTS(self):
+        return [self.DOMAIN, 'django-dbbackup']
 
 
 class LoggingMixin(object):
@@ -51,28 +46,63 @@ class LoggingMixin(object):
         LOG_PATH: required.
     """
 
-    @classmethod
-    def setup(cls):
-        super(LoggingMixin, cls).setup()
+    @property
+    def LOGGING(self):
+        error_request_handlers = ['error']
+        if not self.DEBUG:
+            # Only mail admins if debug is False
+            error_request_handlers.append('mail_admins')
 
-        cls.LOGGING['handlers']['error']['filename'] = cls.get_error_log_file()
-        cls.LOGGING['handlers']['debug']['filename'] = cls.get_debug_log_file()
-
-        # Make sure we don't bother to mail admins if debug is True
-        if cls.DEBUG:
-            try:
-                cls.LOGGING['loggers']['django.request']\
-                                            ['handlers'].remove('mail_admins')
-            except (KeyError, ValueError):
-                pass
-
-    @classmethod
-    def get_error_log_file(cls):
-        return os.path.join(cls.get_setting('LOG_PATH'), 'error.log')
-
-    @classmethod
-    def get_debug_log_file(cls):
-        return os.path.join(cls.get_setting('LOG_PATH'), 'debug.log')
+        return {
+            'version': 1,
+            'disable_existing_loggers': False,
+            'formatters': {
+                'standard': {
+                    'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                    'datefmt' : "%d/%b/%Y %H:%M:%S"
+                },
+            },
+            'handlers': {
+                'error': {
+                    'level':'ERROR',
+                    'class':'logging.handlers.RotatingFileHandler',
+                    'filename': os.path.join(self.LOG_PATH, 'error.log'),
+                    'maxBytes': 50000,
+                    'backupCount': 2,
+                    'formatter': 'standard',
+                },
+                'debug': {
+                    'level':'DEBUG',
+                    'class':'logging.handlers.RotatingFileHandler',
+                    'filename': os.path.join(self.LOG_PATH, 'debug.log'),
+                    'maxBytes': 50000,
+                    'backupCount': 2,
+                    'formatter': 'standard',
+                },
+                'mail_admins': {
+                    'level': 'ERROR',
+                    'class': 'django.utils.log.AdminEmailHandler',
+                    'include_html': True,
+                },
+            },
+            'loggers': {
+                'django': {
+                    'handlers':['error'],
+                    'propagate': True,
+                    'level':'DEBUG',
+                },
+                'django.request': {
+                    'handlers': error_request_handlers,
+                    'level': 'ERROR',
+                    'propagate': False,
+                },
+                'project': {
+                    'handlers':['debug'],
+                    'propagate': True,
+                    'level':'DEBUG',
+                },
+            }
+        }
 
 
 class DatabaseMixin(object):
@@ -84,24 +114,24 @@ class DatabaseMixin(object):
         DEFAULT_DATABASE_PASSWORD: setting for the database password; should
                                    be defined in secret.py.
     """
+    @property
+    def DATABASES(self):
+        return {
+            'default': {
+                'NAME': self.DEFAULT_DATABASE_NAME,
+                'USER': self.DEFAULT_DATABASE_USER,
+                'PASSWORD': self.DEFAULT_DATABASE_PASSWORD,
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            }
+        }
 
-    @classmethod
-    def post_setup(cls):
-        super(DatabaseMixin, cls).post_setup()
+    @property
+    def DEFAULT_DATABASE_NAME(self):
+        return self.PROJECT_NAME
 
-        cls.DATABASES['default']['NAME'] = cls.get_default_database_name()
-        cls.DATABASES['default']['USER'] = cls.get_default_database_user()
-        cls.DATABASES['default']['PASSWORD'] = cls.get_setting(
-                                                'DEFAULT_DATABASE_PASSWORD')
-
-    @classmethod
-    def get_default_database_name(cls):
-        return cls.get_setting('PROJECT_NAME')
-
-    @classmethod
-    def get_default_database_user(cls):
-        return cls.get_setting('PROJECT_NAME')
-
+    @property
+    def DEFAULT_DATABASE_USER(self):
+        return self.PROJECT_NAME
 
 
 class StaticMediaAndTemplatesMixin(object):
@@ -113,50 +143,58 @@ class StaticMediaAndTemplatesMixin(object):
         PROJECT_ROOT: Required.
     """
 
-    @classmethod
-    def setup(cls):
-        super(StaticMediaAndTemplatesMixin, cls).setup()
 
-        cls.STATIC_ROOT = cls.get_static_root()
-        cls.MEDIA_ROOT = cls.get_media_root()
-        cls.TEMPLATE_DIRS = cls.get_template_dirs()
+    @property
+    def STATIC_ROOT(self):
+        return os.path.join(self.PROJECT_ROOT, 'static')
 
-    @classmethod
-    def get_static_root(cls):
-        return os.path.join(cls.get_setting('PROJECT_ROOT'), 'static')
+    @property
+    def MEDIA_ROOT(self):
+        return os.path.join(self.PROJECT_ROOT, 'uploads')
 
-    @classmethod
-    def get_media_root(cls):
-        return os.path.join(cls.get_setting('PROJECT_ROOT'), 'uploads')
-
-    @classmethod
-    def get_template_dirs(cls):
-        TEMPLATE_DIR = os.path.join(cls.get_setting('PROJECT_ROOT'),
-                                    'templates')
+    @property
+    def TEMPLATE_DIRS(self):
+        TEMPLATE_DIR = os.path.join(self.PROJECT_ROOT, 'templates')
         return (TEMPLATE_DIR,)
-
 
 
 class EmailMixin(object):
     """Configuration mixin for setting the email.
+    
+    Usage:
+    
+        SITE_TITLE: Required
+        DOMAIN: Required
     """
 
-    @classmethod
-    def setup(cls):
-        super(EmailMixin, cls).setup()
+    @property
+    def SERVER_EMAIL(self):
+        return 'contact@%s' % self.DOMAIN
 
-        cls.DEFAULT_FROM_EMAIL = cls.get_default_from_email()
-        cls.SERVER_EMAIL = cls.get_server_email()
-        cls.CONTACT_EMAIL = cls.get_server_email()
+    @property
+    def DEFAULT_FROM_EMAIL(self):
+        return '%s <%s>' % (self.SITE_TITLE, self.SERVER_EMAIL)
 
-    @classmethod
-    def get_default_from_email(cls):
-        return 'contact@%s' % cls.get_setting('DOMAIN')
+    @property
+    def CONTACT_EMAIL(self):
+        return self.SERVER_EMAIL
 
-    @classmethod
-    def get_server_email(cls):
-        return cls.get_default_from_email()
 
-    @classmethod
-    def get_contact_email(cls):
-        return cls.get_default_from_email()
+class BaseUrlMixin(object):
+    """Adds a BASE_URL setting.
+    Usage:
+    
+        DOMAIN: Required
+        PORT: Required if running development server
+    """
+
+    PROTOCOL = 'http'
+
+    @property
+    def BASE_URL(self):
+        if getattr(self, 'PORT', ''):
+            # Necessary for the development server
+            url = "%s:%s" % (self.DOMAIN, self.PORT)
+        else:
+            url = self.DOMAIN
+        return '%s://%s' % (self.PROTOCOL, url)
