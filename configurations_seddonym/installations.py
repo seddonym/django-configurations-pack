@@ -71,7 +71,7 @@ class WebfactionMixin(object):
         return self.DEFAULT_DATABASE_NAME
 
 
-class WebfactionDevMixin(object):
+class WebfactionDevMixin(WebfactionMixin):
     """Mixin designed for dev site hosted on Webfaction using the 
     nginx / uwsgi approach.
     
@@ -83,7 +83,7 @@ class WebfactionDevMixin(object):
     WEBFACTION_APPNAME = 'dev'
 
 
-class WebfactionLiveMixin(object):
+class WebfactionLiveMixin(WebfactionMixin):
     """Mixin designed for live site hosted on Webfaction using the 
     nginx / uwsgi approach.
     
