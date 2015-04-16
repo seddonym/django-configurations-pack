@@ -121,7 +121,7 @@ class DatabaseMixin(object):
                 'NAME': self.DEFAULT_DATABASE_NAME,
                 'USER': self.DEFAULT_DATABASE_USER,
                 'PASSWORD': self.DEFAULT_DATABASE_PASSWORD,
-                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'ENGINE': self.DEFAULT_DATABASE_ENGINE,
             }
         }
 
@@ -132,6 +132,10 @@ class DatabaseMixin(object):
     @property
     def DEFAULT_DATABASE_USER(self):
         return self.PROJECT_NAME
+
+    @property
+    def DEFAULT_DATABASE_ENGINE(self):
+        return 'django.db.backends.postgresql_psycopg2'
 
 
 class StaticMediaAndTemplatesMixin(object):
