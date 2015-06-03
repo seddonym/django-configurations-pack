@@ -70,6 +70,7 @@ class WebfactionMixin(object):
     def DEFAULT_DATABASE_USER(self):
         return self.DEFAULT_DATABASE_NAME
 
+    EMAIL_HOST = 'smtp.webfaction.com'
 
 class WebfactionDevMixin(WebfactionMixin):
     """Mixin designed for dev site hosted on Webfaction using the 
