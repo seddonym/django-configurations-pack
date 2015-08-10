@@ -97,7 +97,7 @@ class LoggingMixin(object):
                     'propagate': False,
                 },
                 'project': {
-                    'handlers': error_request_handlers,
+                    'handlers': error_request_handlers + ['debug'],
                     'propagate': False,
                     'level':'DEBUG',
                 },
