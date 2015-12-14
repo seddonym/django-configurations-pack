@@ -10,7 +10,7 @@ class UnifiedDebugMixin(object):
     def setup(cls):
         super(UnifiedDebugMixin, cls).setup()
         # Unify all debug settings
-        cls.THUMBNAIL_DEBUG = cls.TEMPLATE_DEBUG = cls.DEBUG
+        cls.THUMBNAIL_DEBUG = cls.DEBUG
 
 
 class SecretSettingsMixin(object):
@@ -138,15 +138,14 @@ class DatabaseMixin(object):
         return 'django.db.backends.postgresql_psycopg2'
 
 
-class StaticMediaAndTemplatesMixin(object):
-    """Configuration mixin for setting the path to the static, media
-    and template directories.
+class StaticMediaMixin(object):
+    """Configuration mixin for setting the path to the static and media
+    directories.
     
     Usage:
     
         PROJECT_ROOT: Required.
     """
-
 
     @property
     def STATIC_ROOT(self):
@@ -156,10 +155,6 @@ class StaticMediaAndTemplatesMixin(object):
     def MEDIA_ROOT(self):
         return os.path.join(self.PROJECT_ROOT, 'uploads')
 
-    @property
-    def TEMPLATE_DIRS(self):
-        TEMPLATE_DIR = os.path.join(self.PROJECT_ROOT, 'templates')
-        return (TEMPLATE_DIR,)
 
 
 class EmailMixin(object):

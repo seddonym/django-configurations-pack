@@ -25,7 +25,9 @@ class LocalMixin(object):
     def LOG_PATH(self):
         return os.path.join('/var/log/django', self.PROJECT_NAME)
 
-
+    @property
+    def PROJECT_ROOT(self):
+        return os.path.join('/home/david/www', self.PROJECT_NAME)
 
 
 class WebfactionMixin(object):
