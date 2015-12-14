@@ -4,7 +4,7 @@ from setuptools import find_packages
 
 setup(
     name='django_configurations_seddonym',
-    version='0.1.4',
+    version='0.2',
     url='http://github.com/seddonym/django-configurations-seddonym/',
     author='David Seddon',
     author_email='david@seddonym.me',
